@@ -1,0 +1,2 @@
+"0","diff=na.omit(accident-mt)"
+"0","ts.plot(diff,col=""blue"")"

@@ -1,0 +1,2 @@
+"0","sma= ts(smooth.ma(accident,6),start=1974,frequency=12) "
+"0","plot(sma)"

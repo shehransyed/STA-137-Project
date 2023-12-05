@@ -1,0 +1,144 @@
+---
+title: "Time Series Decomposition"
+author: "Lingyou Pang"
+date: "2023-10-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Time Series Decomposition $X_t=m_t+s_t+Y_t$
+
+$X_t$: Original time series
+
+$m_t$: Trend over time
+
+$s_t$: Seasonal oscilation over time
+
+$Y_t$: Remaining time series ($\mathbb{E}Y_t=0$) $\leftarrow$ Time series aims to model
+
+### E.g. Accidental Death in U.S. (Assignment 5)
+
+```{r echo=F}
+accident.dat=read.table("accidents.dat")
+accident=ts(accident.dat,start=1973,frequency = 12)
+ts.plot(accident)
+```
+
+### Seasonal Decomposition Methods
+
+#### Method1: Small trend method:
+
+STEP 1: Compute yearly average $\hat m_j$ over all months a $\hat m_j=\frac{1}{12}\sum_{k=1}^{12}x_{j,k}$ and eliminate the yearly trend (The trend within each period is constant)
+
+```{r echo=F}
+m_j1=tapply(accident,floor(time(accident)),mean)
+m_j1=ts(rep(m_j1,each=12),start=1973,frequency = 12)
+ts.plot(accident,m_j1,col=c("black","red"))
+ts.plot(accident-m_j1,col="blue")
+```
+
+STEP 2: Compute monthly average $\hat s_k$ Seasonal componient is constant for the same month across years.
+
+```{r echo=F}
+s_k1=tapply(accident-m_j1,cycle(accident),mean)
+s_k1=ts(rep(s_k1,times=6),start=1973,frequency = 12)
+ts.plot(accident-m_j1,s_k1,col=c("blue","green"))
+res1=accident-m_j1-s_k1
+ts.plot(res1,col="grey")
+```
+
+#### Method 2: Moving Average Filter
+
+STEP1: Compute trend $m_t$ using MA filtering. Moving average doesn't yeild constant with-year trend anymore.
+
+```{r echo=F}
+#d: even 
+#d odd filter=rep(1,times=11)
+mt=filter(accident,filter=c(0.5,rep(1,times=11),0.5),method="convolution",sides=2)/12
+ts.plot(accident,mt,col=c("black","red"))
+diff=na.omit(accident-mt)
+ts.plot(diff,col="blue")
+```
+
+STEP 2: Using the filtered data, compute average monthly fluctuation, while the seasonal componient for each month is still constant.
+
+```{r echo=F}
+mu_k=ts(rep(tapply(diff,cycle(diff),mean),times=6),start=1973,frequency = 12)
+s_k2=mu_k-mean(mu_k)
+ts.plot(s_k2,col="green")
+deseason=accident-s_k2
+ts.plot(accident)
+lines(deseason,col="darkblue")
+```
+
+STEP 3: Re-estimate mean $\hat m_t$ based on deseasoned part.
+
+```{r echo=F}
+mt2=filter(deseason,filter=c(0.5,rep(1,times=11),0.5),method="convolution",sides=2)/12
+res2=deseason-mt2
+ts.plot(res2,col="grey")
+```
+
+#### Method 3 Difference
+
+STEP 1: Eliminate Seasonal Effect using difference
+
+```{r echo=F}
+# ts.plot(accident,diff(accident,lag=12),col=c("black","grey"))
+detrend2=diff(accident,lag=12) #lag here equals to length of the period
+ts.plot(detrend2,col="darkblue")
+```
+
+STEP 2: Detrend over the $m_t$
+
+```{r echo=F}
+
+#res3=ts(lm(detrend2~time(detrend2))$residual,start=1974,frequency=12)
+#ts.plot(res3,col="grey")
+#Poly Regression on t
+lm(detrend2~time(detrend2)+ I(time(detrend2))^2 ) 
+
+detrend_poly <- function(data_ts, P) {
+  # Generate the polynomial terms for the formula
+  poly_terms <- paste("I(time(data_ts)^", 1:P, ")", collapse=" + ")
+  # Create the formula for the linear model
+  formula_str <- paste("data_ts ~", poly_terms)
+  formula_obj <- as.formula(formula_str)
+  
+  # Fit the linear model and extract the fitted values
+  fit <- lm(formula_obj)
+  fitted_values <- ts(fit$fitted.values, start=start(data_ts), frequency=frequency(data_ts))
+  
+  # Detrend the original time series by subtracting the fitted values
+  detrended_data <- data_ts - fitted_values
+  
+  return(list(detrended_data = detrended_data, fit = fit))
+}
+
+# Example usage:
+#Assume data_ts is your time series data
+P = 2  # for a quadratic model
+result = detrend_poly(accident, P)
+ts.plot(result$detrended_data, col="grey")
+
+```
+
+#### ITSMR Package
+
+```{r}
+#install.packages("itsmr")
+library(itsmr)
+s = ts(season(accident,12),start=1974,frequency=12)
+plotc(s)
+sma= ts(smooth.ma(accident,6),start=1974,frequency=12) 
+plot(sma)
+esma = ts(smooth.exp(accident,0.4),start=1974,frequency=12) 
+plot(esma)
+tr = ts(trend(accident,5),start=1974,frequency=12) 
+plot(tr)
+```
+
+Reference: Millions of thanks to Tianke Li's version from last quarter

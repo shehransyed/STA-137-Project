@@ -1,0 +1,4 @@
+"0","N = round(length(logdata) / 12)"
+"0","s_k1 = tapply(logdata - m_j1, cycle(logdata), mean)"
+"0","s_k1 = ts(rep(s_k1, times = N), start = 2004, frequency = 12)"
+"0","ts.plot(logdata - m_j1, s_k1, col = c(""blue"", ""red""))"

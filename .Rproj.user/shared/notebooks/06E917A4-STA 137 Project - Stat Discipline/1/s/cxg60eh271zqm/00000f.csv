@@ -1,0 +1,2 @@
+"0","logdata_components = decompose(logdata)"
+"0","plot(logdata_components)"

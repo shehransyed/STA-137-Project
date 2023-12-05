@@ -1,0 +1,94 @@
+---
+title: "STA 137 Project"
+author: "Shehran Syed"
+date: "2023-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data = read.csv("stat_search.csv")
+names(data) = c("time", "value")
+plot(data$value)
+```
+
+```{r}
+data = ts(data$value, start = c(2004, 1), frequency = 12)
+
+plot.ts(data,
+        xlab = "Time",
+        ylab = "",
+        main = "Interest of Statistics Term")
+
+plot.ts(log(data),
+        xlab = "Time",
+        ylab = "",
+        main = "Interest of Statistics Term")
+```
+
+```{r}
+logdata = log(data)
+```
+
+```{r}
+logdata_components = decompose(logdata)
+plot(logdata_components)
+```
+
+## Removing Trend and Seasonality
+
+### Small Trends Method
+
+```{r}
+m_j1 = tapply(logdata, floor(time(logdata)), mean)
+m_j1 = ts(rep(m_j1, each = 12), start = 2004, frequency = 12)
+ts.plot(logdata, m_j1, col = c("black", "red"))
+ts.plot(logdata - m_j1, col = "blue")
+```
+
+```{r}
+N = round(length(logdata) / 12)
+s_k1 = tapply(logdata - m_j1, cycle(logdata), mean)
+s_k1 = ts(rep(s_k1, times = N), start = 2004, frequency = 12)
+ts.plot(logdata - m_j1, s_k1, col = c("blue", "red"))
+res1 = logdata - m_j1 - s_k1
+ts.plot(res1, col = "black")
+```
+
+```{r}
+qqnorm(res1)
+acf(res1, lag.max = 24, na.action = na.pass)
+pacf(res1, lag.max = 24, na.action = na.pass)
+```
+
+```{r}
+lag.plot(res1, lags=12, layout=c(3,4), diag=F)
+```
+
+### Linear Trend and Differenced Seasonality
+
+```{r}
+t = 1:length(logdata)
+lsfit = lm(logdata ~ t)
+plot(t, logdata)
+lines(lsfit$fit)
+plot.ts(lsfit$residuals)
+```
+
+```{r}
+
+s_k2 = tapply(lsfit$residuals, cycle(logdata), mean)
+s_k2 = ts(rep(s_k2, times = N), start = 2004, frequency = 12)
+ts.plot(lsfit$residuals, s_k2, col = c("blue", "red"))
+res2 = lsfit$residuals - s_k2
+ts.plot(res2, col = "black")
+```
+
+```{r}
+qqnorm(res1)
+acf(res1, lag.max = 24, na.action = na.pass)
+pacf(res1, lag.max = 24, na.action = na.pass)
+```

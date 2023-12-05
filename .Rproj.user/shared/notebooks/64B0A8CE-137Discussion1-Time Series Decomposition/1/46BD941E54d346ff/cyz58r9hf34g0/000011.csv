@@ -1,0 +1,3 @@
+"0","accident.dat=read.table(""accidents.dat"")"
+"0","accident=ts(accident.dat,start=1973,frequency = 12)"
+"0","ts.plot(accident)"

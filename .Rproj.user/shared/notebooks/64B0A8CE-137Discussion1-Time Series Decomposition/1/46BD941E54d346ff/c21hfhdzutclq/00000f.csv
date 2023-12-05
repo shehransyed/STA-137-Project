@@ -1,0 +1,4 @@
+"0","#install.packages(""itsmr"")"
+"0","library(itsmr)"
+"0","s = ts(season(accident,12),start=1974,frequency=12)"
+"0","plotc(s)"

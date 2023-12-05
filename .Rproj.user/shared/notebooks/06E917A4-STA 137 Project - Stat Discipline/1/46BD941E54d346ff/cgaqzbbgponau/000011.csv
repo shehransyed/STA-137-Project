@@ -1,0 +1,2 @@
+"0","res2 = ts(detrend2 - s_k2, start = 2004, frequency = 12)"
+"0","ts.plot(res2, col = ""black"")"

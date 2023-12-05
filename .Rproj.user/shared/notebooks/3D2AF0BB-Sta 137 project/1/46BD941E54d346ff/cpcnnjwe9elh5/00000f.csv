@@ -1,0 +1,2 @@
+"0","mt=stats::filter(data,filter=c(0.5,rep(1,times=11),0.5),method=""convolution"",sides=2)/12"
+"0","ts.plot(data,mt,col=c(""black"",""red""))"

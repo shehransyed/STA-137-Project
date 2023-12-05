@@ -1,0 +1,6 @@
+"0","data = ts(data$value, start = c(2004, 1), frequency = 12)"
+"0",""
+"0","plot.ts(data,"
+"0","        xlab = ""Time"","
+"0","        ylab = """","
+"0","        main = ""Interest of Statistics Term"")"

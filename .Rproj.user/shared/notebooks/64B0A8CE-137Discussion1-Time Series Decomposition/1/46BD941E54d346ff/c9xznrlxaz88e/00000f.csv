@@ -1,0 +1,3 @@
+"0","# ts.plot(accident,diff(accident,lag=12),col=c(""black"",""grey""))"
+"0","detrend2=diff(accident,lag=12) #lag here equals to length of the period"
+"0","ts.plot(detrend2,col=""darkblue"")"

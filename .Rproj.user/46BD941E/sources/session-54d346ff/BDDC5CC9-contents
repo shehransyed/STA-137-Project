@@ -1,0 +1,21 @@
+---
+title: "STA 137 Project"
+author: "Shehran Syed"
+date: "2023-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data = read.csv("stat_search.csv")
+names(data) = c("time", "value")
+plot(data$value)
+```
+
+```{r}
+temp = ts(data$value, start = c(2004, 1), frequency = 12)
+ts.plot(temp)
+```

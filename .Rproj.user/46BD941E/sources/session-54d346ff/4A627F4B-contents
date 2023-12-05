@@ -1,0 +1,203 @@
+---
+title: "Untitled"
+author: "Lokesh Gorrela Krishna Reddy"
+date: "2023-12-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)
+data = read_csv("multiTimeline.csv")
+data
+```
+
+```{r}
+data = ts(data$`Statistics: (United States)`, start=2004, frequency = 12)
+```
+
+# Plot data
+
+```{r}
+plot(data, xlab="Time", ylab="", main="Interest of Statistics Term")
+
+plot(log(data), xlab="Time", ylab="", main="Interest of Statistics Term")
+```
+
+```{r}
+data = log(data)
+```
+
+# Remove the trend component
+
+## Least Squares Estimation
+
+```{r}
+t = 1:length(data)
+lsfit = lm(data~t)
+plot(t, data, xlab="", ylab="", main="")
+lines(lsfit$fit)
+```
+
+```{r}
+plot(lsfit$residuals, type="l")
+```
+
+# Moving average
+
+## single sided
+
+```{r}
+ma3 = stats::filter(data, sides=1, rep(1,3)/3)
+ma4 = stats::filter(data, sides=1, rep(1,4)/4)
+ma6 = stats::filter(data, sides=1, rep(1,6)/6)
+
+plot(t, ma3, xlab="", ylab="", type="l")
+lines(t, ma4)
+lines(t, ma6)
+```
+
+```{r}
+#par(mfrow=c(1,3))
+plot(data-ma3)
+abline(h=0)
+plot(data-ma4)
+abline(h=0)
+plot(data-ma6)
+abline(h=0)
+```
+
+## Double sided
+
+```{r}
+ma2_3 = stats::filter(data, sides=2, rep(1,5)/5)
+ma2_4 = stats::filter(data, sides=2, rep(1,9)/9)
+ma2_6 = stats::filter(data, sides=2, rep(1,13)/13)
+
+plot(t, ma2_3, xlab="", ylab="", type="l")
+lines(t, ma2_4)
+lines(t, ma2_6)
+```
+
+```{r}
+plot(data-ma2_3)
+abline(h=0)
+plot(data-ma2_4)
+abline(h=0)
+plot(data-ma2_6)
+abline(h=0)
+```
+
+# Differencing
+
+```{r}
+d1=diff(data)
+d2=diff(d1)
+d3=diff(d2)
+d4=diff(d3)
+plot.ts(d1, xlab="", ylab="")
+plot.ts(d2, xlab="", ylab="")
+plot.ts(d3, xlab="", ylab="")
+plot.ts(d4, xlab="", ylab="")
+```
+
+# Removing Trend and seasonality
+
+## small trend method
+
+```{r}
+m_j1=tapply(data,floor(time(data)),mean)
+m_j1=ts(rep(m_j1,each=12),start=2004,frequency = 12)
+ts.plot(data,m_j1,col=c("black","red"))
+ts.plot(data-m_j1,col="blue")
+```
+
+```{r}
+N = length(data)/12
+#N
+s_k1=tapply(data-m_j1,cycle(data),mean)
+s_k1=ts(rep(s_k1,times=20),start=2004,frequency = 12)
+ts.plot(data-m_j1,s_k1,col=c("blue","green"))
+res1=data-m_j1-s_k1
+ts.plot(res1,col="black")
+```
+
+## Moving Average
+
+```{r}
+mt=stats::filter(data,filter=c(0.5,rep(1,times=11),0.5),method="convolution",sides=2)/12
+ts.plot(data,mt,col=c("black","red"))
+diff=na.omit(data-mt)
+ts.plot(diff,col="blue")
+```
+
+```{r}
+mu_k=ts(rep(tapply(diff,cycle(diff),mean),times=20),start=2004,frequency = 12)
+s_k2=mu_k-mean(mu_k)
+ts.plot(s_k2,col="green")
+deseason=data-s_k2
+ts.plot(data)
+lines(deseason,col="darkblue")
+```
+
+```{r}
+mt2=stats::filter(deseason,filter=c(0.5,rep(1,times=11),0.5),method="convolution",sides=2)/12
+res2=deseason-mt2
+ts.plot(res2,col="black")
+```
+
+## Differencing
+
+```{r}
+detrend2=diff(data,lag=12) #lag here equals to length of the period
+ts.plot(detrend2,col="darkblue")
+```
+
+```{r}
+#res3=ts(lm(detrend2~time(detrend2))$residual,start=1974,frequency=12)
+#ts.plot(res3,col="grey")
+#Poly Regression on t
+lm(detrend2~time(detrend2)+ I(time(detrend2))^2 ) 
+
+detrend_poly <- function(data_ts, P) {
+  # Generate the polynomial terms for the formula
+  poly_terms <- paste("I(time(data_ts)^", 1:P, ")", collapse=" + ")
+  # Create the formula for the linear model
+  formula_str <- paste("data_ts ~", poly_terms)
+  formula_obj <- as.formula(formula_str)
+  
+  # Fit the linear model and extract the fitted values
+  fit <- lm(formula_obj)
+  fitted_values <- ts(fit$fitted.values, start=start(data_ts), frequency=frequency(data_ts))
+  
+  # Detrend the original time series by subtracting the fitted values
+  detrended_data <- data_ts - fitted_values
+  
+  return(list(detrended_data = detrended_data, fit = fit))
+}
+
+# Example usage:
+#Assume data_ts is your time series data
+P = 2  # for a quadratic model
+result = detrend_poly(data, P)
+ts.plot(result$detrended_data, col="black")
+
+```
+
+# Fit Test
+
+```{r}
+qqnorm(res1)
+qqnorm(res2)
+```
+
+```{r}
+acf(res1, lag.max = 20, na.action = na.pass)
+```
+
+```{r}
+acf(res2, lag.max = 20, na.action = na.pass)
+```

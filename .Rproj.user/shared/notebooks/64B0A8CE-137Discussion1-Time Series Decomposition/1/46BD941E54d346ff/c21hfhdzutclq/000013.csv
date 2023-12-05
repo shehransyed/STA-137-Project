@@ -1,0 +1,2 @@
+"0","esma = ts(smooth.exp(accident,0.4),start=1974,frequency=12) "
+"0","plot(esma)"

@@ -1,0 +1,3 @@
+"0","m_j1=tapply(accident,floor(time(accident)),mean)"
+"0","m_j1=ts(rep(m_j1,each=12),start=1973,frequency = 12)"
+"0","ts.plot(accident,m_j1,col=c(""black"",""red""))"

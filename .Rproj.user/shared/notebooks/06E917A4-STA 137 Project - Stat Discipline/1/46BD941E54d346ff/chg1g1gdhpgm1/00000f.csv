@@ -1,0 +1,2 @@
+"0","res3 = diff(detrend2, lag = 12)"
+"0","plot.ts(res3)"

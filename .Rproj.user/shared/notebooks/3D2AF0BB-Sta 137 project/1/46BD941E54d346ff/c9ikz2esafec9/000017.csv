@@ -1,0 +1,5 @@
+"0","N = length(data)/12"
+"0","#N"
+"0","s_k1=tapply(data-m_j1,cycle(data),mean)"
+"0","s_k1=ts(rep(s_k1,times=20),start=2004,frequency = 12)"
+"0","ts.plot(data-m_j1,s_k1,col=c(""blue"",""green""))"
