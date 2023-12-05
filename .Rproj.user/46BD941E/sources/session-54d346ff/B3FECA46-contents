@@ -60,15 +60,11 @@ ts.plot(res1, col = "black")
 
 ```{r}
 qqnorm(res1)
-acf(res1, lag.max = 24, na.action = na.pass)
-pacf(res1, lag.max = 24, na.action = na.pass)
-```
-
-```{r}
+acf(res1, lag.max = 48, na.action = na.pass)
 lag.plot(res1, lags=12, layout=c(3,4), diag=F)
 ```
 
-### Linear Trend and Differenced Seasonality
+### Linear Trend
 
 ```{r}
 t = 1:length(logdata)
@@ -79,16 +75,111 @@ plot.ts(lsfit$residuals)
 ```
 
 ```{r}
-
-s_k2 = tapply(lsfit$residuals, cycle(logdata), mean)
+detrend2 = ts(lsfit$residuals, start = 2004, frequency = 12)
+s_k2 = tapply(detrend2, cycle(logdata), mean)
 s_k2 = ts(rep(s_k2, times = N), start = 2004, frequency = 12)
-ts.plot(lsfit$residuals, s_k2, col = c("blue", "red"))
-res2 = lsfit$residuals - s_k2
+ts.plot(detrend2, s_k2, col = c("blue", "red"))
+res2 = ts(detrend2 - s_k2, start = 2004, frequency = 12)
 ts.plot(res2, col = "black")
 ```
 
 ```{r}
-qqnorm(res1)
-acf(res1, lag.max = 24, na.action = na.pass)
-pacf(res1, lag.max = 24, na.action = na.pass)
+qqnorm(res2)
+acf(res2, lag.max = 48, na.action = na.pass)
+lag.plot(res2, lags=12, layout=c(3,4), diag=F)
+```
+
+```{r}
+res3 = diff(detrend2, lag = 12)
+plot.ts(res3)
+```
+
+```{r}
+qqnorm(res3)
+acf(res3, lag.max = 48, na.action = na.pass)
+lag.plot(res3, lags=12, layout=c(3,4), diag=F)
+```
+
+## Assessing the residuals
+
+```{r}
+plot.ts(res1)
+plot.ts(res2)
+plot.ts(res3)
+```
+
+### Sample ACF and PACF
+
+```{r}
+acf(res1, lag.max = 48, na.action = na.pass)
+acf(res2, lag.max = 48, na.action = na.pass)
+acf(res3, lag.max = 48, na.action = na.pass)
+```
+
+```{r}
+pacf(res1, lag.max = 48, na.action = na.pass)
+pacf(res2, lag.max = 48, na.action = na.pass)
+pacf(res3, lag.max = 48, na.action = na.pass)
+```
+
+### Normal QQ Plot
+
+```{r}
+qq1 = qqnorm(res1)
+qq2 = qqnorm(res2)
+qq3 = qqnorm(res3)
+```
+
+```{r}
+(R2_1 = sum((qq1$y-mean(qq1$y))*qq1$x)^2 / (sum((qq1$y-mean(qq1$y))^2)*sum(qq1$x^2)))
+
+(R2_2 = sum((qq2$y-mean(qq2$y))*qq2$x)^2 / (sum((qq2$y-mean(qq2$y))^2)*sum(qq2$x^2)))
+
+(R2_3 = sum((qq3$y-mean(qq3$y))*qq3$x)^2 / (sum((qq3$y-mean(qq3$y))^2)*sum(qq3$x^2)))
+```
+
+### Ljung-Box Test
+
+```{r}
+Box.test(res1, lag = 48, type = "Ljung")
+Box.test(res2, lag = 48, type = "Ljung")
+Box.test(res3, lag = 48, type = "Ljung")
+```
+
+### ADF Test
+
+```{r}
+tseries::adf.test(res1)
+tseries::adf.test(res2)
+tseries::adf.test(res3)
+```
+
+## Analyzing the Rough Component
+
+```{r}
+library(forecast)
+
+arma_fit_1 = auto.arima(res1, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aic", trace = TRUE)
+
+arma_fit_2 = auto.arima(res2, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aic", trace = TRUE)
+
+arma_fit_3 = auto.arima(res3, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aic", trace = TRUE)
+```
+
+```{r}
+acf(arma_fit_1$residuals, lag.max = 48, na.action = na.pass)
+acf(arma_fit_2$residuals, lag.max = 48, na.action = na.pass)
+acf(arma_fit_3$residuals, lag.max = 48, na.action = na.pass)
+```
+
+```{r}
+arma_qq1 = qqnorm(arma_fit_1$residuals)
+arma_qq2 = qqnorm(arma_fit_2$residuals)
+arma_qq3 = qqnorm(arma_fit_3$residuals)
+```
+
+```{r}
+Box.test(arma_fit_1$residuals, lag = 48, type = "Ljung")
+Box.test(arma_fit_2$residuals, lag = 48, type = "Ljung")
+Box.test(arma_fit_3$residuals, lag = 48, type = "Ljung")
 ```

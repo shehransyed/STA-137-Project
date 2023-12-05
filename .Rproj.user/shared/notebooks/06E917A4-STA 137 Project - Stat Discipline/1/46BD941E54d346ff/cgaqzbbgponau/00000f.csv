@@ -1,4 +1,0 @@
-"0","detrend2 = ts(lsfit$residuals, start = 2004, frequency = 12)"
-"0","s_k2 = tapply(detrend2, cycle(logdata), mean)"
-"0","s_k2 = ts(rep(s_k2, times = N), start = 2004, frequency = 12)"
-"0","ts.plot(detrend2, s_k2, col = c(""blue"", ""red""))"

@@ -1,3 +1,0 @@
-"0","t = 1:length(logdata)"
-"0","lsfit = lm(logdata ~ t)"
-"0","plot(t, logdata)"

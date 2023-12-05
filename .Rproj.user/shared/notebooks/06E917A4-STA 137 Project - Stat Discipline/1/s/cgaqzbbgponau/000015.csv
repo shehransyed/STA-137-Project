@@ -1,6 +1,0 @@
-"0","s_k2 = tapply(lsfit$residuals, cycle(logdata), mean)"
-"0","s_k2 = ts(rep(s_k2, times = N), start = 2004, frequency = 12)"
-"0","ts.plot(lsfit$residuals, s_k2, col = c(""blue"", ""red""))"
-"2","Error in .cbind.ts(list(...), .makeNamesTs(...), dframe = dframe, union = TRUE) : 
-  non-time series not of the correct length
-"

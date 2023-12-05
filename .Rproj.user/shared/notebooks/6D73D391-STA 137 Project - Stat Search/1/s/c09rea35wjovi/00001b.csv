@@ -1,3 +1,0 @@
-"0","data = read.csv(""stat_search.csv"")"
-"0","names(data) = c(""time"", ""value"")"
-"0","plot(data$value)"
