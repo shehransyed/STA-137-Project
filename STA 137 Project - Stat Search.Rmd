@@ -38,23 +38,29 @@ logdata_components = decompose(logdata)
 plot(logdata_components)
 ```
 
+```{r}
+last_year_start = (floor(length(logdata)/12) * 12) + 1
+ts_train = ts(logdata[1: last_year_start-1], start = 2004, frequency = 12)
+ts_test = ts(logdata[last_year_start : length(logdata)], start = 2023, frequency = 12)
+```
+
 ## Removing Trend and Seasonality
 
 ### Small Trends Method
 
 ```{r}
-m_j1 = tapply(logdata, floor(time(logdata)), mean)
-m_j1 = ts(rep(m_j1, each = 12), start = 2004, frequency = 12)
-ts.plot(logdata, m_j1, col = c("black", "red"))
-ts.plot(logdata - m_j1, col = "blue")
+st_mean_1 = tapply(ts_train, floor(time(ts_train)), mean)
+m_j1 = ts(rep(st_mean_1, each = 12), start = 2004, frequency = 12)
+ts.plot(ts_train, m_j1, col = c("black", "red"))
+ts.plot(ts_train - m_j1, col = "blue")
 ```
 
 ```{r}
-N = round(length(logdata) / 12)
-s_k1 = tapply(logdata - m_j1, cycle(logdata), mean)
+N = round(length(ts_train) / 12)
+s_k1 = tapply(ts_train - m_j1, cycle(ts_train), mean)
 s_k1 = ts(rep(s_k1, times = N), start = 2004, frequency = 12)
-ts.plot(logdata - m_j1, s_k1, col = c("blue", "red"))
-res1 = logdata - m_j1 - s_k1
+ts.plot(ts_train - m_j1, s_k1, col = c("blue", "red"))
+res1 = ts_train - m_j1 - s_k1
 ts.plot(res1, col = "black")
 ```
 
@@ -67,16 +73,16 @@ lag.plot(res1, lags=12, layout=c(3,4), diag=F)
 ### Linear Trend
 
 ```{r}
-t = 1:length(logdata)
-lsfit = lm(logdata ~ t)
-plot(t, logdata)
+t = 1:length(ts_train)
+lsfit = lm(ts_train ~ t)
+plot(t, ts_train)
 lines(lsfit$fit)
 plot.ts(lsfit$residuals)
 ```
 
 ```{r}
 detrend2 = ts(lsfit$residuals, start = 2004, frequency = 12)
-s_k2 = tapply(detrend2, cycle(logdata), mean)
+s_k2 = tapply(detrend2, cycle(ts_train), mean)
 s_k2 = ts(rep(s_k2, times = N), start = 2004, frequency = 12)
 ts.plot(detrend2, s_k2, col = c("blue", "red"))
 res2 = ts(detrend2 - s_k2, start = 2004, frequency = 12)
@@ -141,9 +147,9 @@ qq3 = qqnorm(res3)
 ### Ljung-Box Test
 
 ```{r}
-Box.test(res1, lag = 48, type = "Ljung")
-Box.test(res2, lag = 48, type = "Ljung")
-Box.test(res3, lag = 48, type = "Ljung")
+Box.test(res1, lag = 1, type = "Ljung")
+Box.test(res2, lag = 1, type = "Ljung")
+Box.test(res3, lag = 1, type = "Ljung")
 ```
 
 ### ADF Test
@@ -179,7 +185,48 @@ arma_qq3 = qqnorm(arma_fit_3$residuals)
 ```
 
 ```{r}
-Box.test(arma_fit_1$residuals, lag = 48, type = "Ljung")
-Box.test(arma_fit_2$residuals, lag = 48, type = "Ljung")
-Box.test(arma_fit_3$residuals, lag = 48, type = "Ljung")
+Box.test(arma_fit_1$residuals, type = "Ljung")
+Box.test(arma_fit_2$residuals, type = "Ljung")
+Box.test(arma_fit_3$residuals, type = "Ljung")
+```
+
+```{r}
+summary(arma_fit_1)
+summary(arma_fit_2)
+summary(arma_fit_3)
+```
+
+### Forecasting
+
+```{r}
+arma_fc_1 = forecast(arma_fit_1, h = 12)
+arma_fc_2 = forecast(arma_fit_2, h = 12)
+arma_fc_3 = forecast(arma_fit_3, h = 12)
+
+plot(arma_fc_1)
+plot(arma_fc_2)
+plot(arma_fc_3)
+```
+
+```{r}
+ts_pred_1_value = arma_fc_1$mean + s_k1[1:12] + mean(tail(st_mean_1, 2))
+ts_pred_1_lower = arma_fc_1$lower[ ,"95%"] + s_k1[1:12] + mean(tail(st_mean_1, 2))
+ts_pred_1_upper = arma_fc_1$upper[ ,"95%"] + s_k1[1:12] + mean(tail(st_mean_1, 2))
+ts.plot(ts_test, ts_pred_1_value, ts_pred_1_lower, ts_pred_1_upper, col = c('black', 'steelblue', 'red', 'red'))
+```
+
+```{r}
+pred_trend = predict(lsfit, newdata = data.frame(t = c(229:240)))
+ts_pred_2_value = arma_fc_2$mean + s_k2[1:12] + pred_trend
+ts_pred_2_lower = arma_fc_2$lower[ ,"95%"] + s_k2[1:12] + pred_trend
+ts_pred_2_upper = arma_fc_2$upper[ ,"95%"] + s_k2[1:12] + pred_trend
+ts.plot(ts_test, ts_pred_2_value, ts_pred_2_lower, ts_pred_2_upper, col = c('black', 'steelblue', 'red', 'red'))
+```
+
+```{r}
+pred_trend = predict(lsfit, newdata = data.frame(t = c(229:240)))
+ts_pred_3_value = arma_fc_3$mean + s_k2[1:12] + pred_trend
+ts_pred_3_lower = arma_fc_3$lower[ ,"95%"] + s_k2[1:12] + pred_trend
+ts_pred_3_upper = arma_fc_3$upper[ ,"95%"] + s_k2[1:12] + pred_trend
+ts.plot(ts_test, ts_pred_3_value, ts_pred_3_lower, ts_pred_3_upper, col = c('black', 'steelblue', 'red', 'red'))
 ```
