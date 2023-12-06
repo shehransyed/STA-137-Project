@@ -225,7 +225,9 @@ ts.plot(ts_test, ts_pred_2_value, ts_pred_2_lower, ts_pred_2_upper, col = c('bla
 
 ```{r}
 pred_trend = predict(lsfit, newdata = data.frame(t = c(229:240)))
-ts_pred_3_value = arma_fc_3$mean + s_k2[1:12] + pred_trend
+pred_res3 = ts(c(res3, arma_fc_3$mean), start = 2005, frequency = 12)
+pred_detrend2 = diffinv(pred_res3, lag = 12, xi = detrend2[1:12])
+ts_pred_3_value = tail(pred_detrend2, 12) + pred_trend
 ts_pred_3_lower = arma_fc_3$lower[ ,"95%"] + s_k2[1:12] + pred_trend
 ts_pred_3_upper = arma_fc_3$upper[ ,"95%"] + s_k2[1:12] + pred_trend
 ts.plot(ts_test, ts_pred_3_value, ts_pred_3_lower, ts_pred_3_upper, col = c('black', 'steelblue', 'red', 'red'))

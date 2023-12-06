@@ -3,7 +3,7 @@
     "path": "H:/My Drive/RStudio Projects/STA 137 Project/STA 137 Project - Stat Search.Rmd",
     "project_path": "STA 137 Project - Stat Search.Rmd",
     "type": "r_markdown",
-    "hash": "118972034",
+    "hash": "0",
     "contents": "",
     "dirty": false,
     "created": 1701747864019.0,
@@ -19,15 +19,15 @@
         "rmdVisualWrapConfigured": "true",
         "docOutlineVisible": "0",
         "rmdVisualCollapsedChunks": "",
-        "rmdVisualModeLocation": "5103:17040",
+        "rmdVisualModeLocation": "5221:17046.400390625",
         "last_setup_crc32": "54d346ffbb338d19"
     },
     "folds": "",
-    "lastKnownWriteTime": 1701824287,
+    "lastKnownWriteTime": 1701828018,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1701824287171,
+    "last_content_update": 1701828019053,
     "read_only": false,
     "read_only_alternatives": []
 }
