@@ -3,6 +3,7 @@ title: "STA 137 Project"
 author: "Shehran Syed"
 date: "2023-12-04"
 output: html_document
+keep_md: true
 ---
 
 ```{r setup, include=FALSE}
@@ -20,13 +21,13 @@ data = ts(data$value, start = c(2004, 1), frequency = 12)
 
 plot.ts(data,
         xlab = "Time",
-        ylab = "",
-        main = "Interest of Statistics Term")
+        ylab = "Relative Interest",
+        main = "Search Trend of Statistics")
 
 plot.ts(log(data),
         xlab = "Time",
-        ylab = "",
-        main = "Interest of Statistics Term")
+        ylab = "log(Relative Interest)",
+        main = "Log Search Trend of Statistics")
 ```
 
 ```{r}
@@ -117,15 +118,15 @@ plot.ts(res3)
 ### Sample ACF and PACF
 
 ```{r}
-acf(res1, lag.max = 48, na.action = na.pass)
-acf(res2, lag.max = 48, na.action = na.pass)
-acf(res3, lag.max = 48, na.action = na.pass)
+acf(res1, lag.max = 48, na.action = na.pass, main = "ACF of res1")
+acf(res2, lag.max = 48, na.action = na.pass, main = "ACF of res2")
+acf(res3, lag.max = 48, na.action = na.pass, main = "ACF of res3")
 ```
 
 ```{r}
-pacf(res1, lag.max = 48, na.action = na.pass)
-pacf(res2, lag.max = 48, na.action = na.pass)
-pacf(res3, lag.max = 48, na.action = na.pass)
+pacf(res1, lag.max = 48, na.action = na.pass, main = "PACF of res1")
+pacf(res2, lag.max = 48, na.action = na.pass, main = "PACF of res2")
+pacf(res3, lag.max = 48, na.action = na.pass, main = "PACF of res3")
 ```
 
 ### Normal QQ Plot
@@ -147,9 +148,9 @@ qq3 = qqnorm(res3)
 ### Ljung-Box Test
 
 ```{r}
-Box.test(res1, lag = 1, type = "Ljung")$p.value
-Box.test(res2, lag = 1, type = "Ljung")$p.value
-Box.test(res3, lag = 1, type = "Ljung")$p.value
+Box.test(res1, lag = 1, type = "Ljung")
+Box.test(res2, lag = 1, type = "Ljung")
+Box.test(res3, lag = 1, type = "Ljung")
 ```
 
 ### ADF Test
@@ -165,11 +166,11 @@ tseries::adf.test(res3)
 ```{r}
 library(forecast)
 
-arma_fit_1 = auto.arima(res1, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aic", trace = TRUE)
+arma_fit_1 = auto.arima(res1, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aicc", trace = TRUE)
 
-arma_fit_2 = auto.arima(res2, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aic", trace = TRUE)
+arma_fit_2 = auto.arima(res2, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aicc", trace = TRUE)
 
-arma_fit_3 = auto.arima(res3, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aic", trace = TRUE)
+arma_fit_3 = auto.arima(res3, d = 0, D = 0, max.order = 6, max.P = 0, max.Q = 0, ic = "aicc", trace = TRUE)
 ```
 
 ```{r}
@@ -203,9 +204,9 @@ arma_fc_1 = forecast(arma_fit_1, h = 12)
 arma_fc_2 = forecast(arma_fit_2, h = 12)
 arma_fc_3 = forecast(arma_fit_3, h = 12)
 
-plot(arma_fc_1)
-plot(arma_fc_2)
-plot(arma_fc_3)
+plot(arma_fc_1, main = "12 month forecast of res1")
+plot(arma_fc_2, main = "12 month forecast of res2")
+plot(arma_fc_3, main = "12 month forecast of res3")
 ```
 
 ```{r}
@@ -231,4 +232,41 @@ ts_pred_3_value = tail(pred_detrend2, 12) + pred_trend
 ts_pred_3_lower = arma_fc_3$lower[ ,"95%"] + s_k2[1:12] + pred_trend
 ts_pred_3_upper = arma_fc_3$upper[ ,"95%"] + s_k2[1:12] + pred_trend
 ts.plot(ts_test, ts_pred_3_value, ts_pred_3_lower, ts_pred_3_upper, col = c('black', 'steelblue', 'red', 'red'))
+```
+
+### Spectral Analysis
+
+```{r}
+spectral_data = logdata
+n=length(spectral_data)
+#n
+t=1:n
+
+ls = lm(spectral_data ~ t)
+sd = lsfit$residuals
+
+I=abs(fft(sd)/sqrt(n))^2
+P = 4*I/n
+f = 1:(n/2)/n
+
+#length(f)
+#length(P[1: (n/2)+1])
+
+plot(f, P[1: (n/2)+1 ], type="l", xlab = "frequency", ylab="P")
+
+abline(v=1/12.5, col="red")
+abline(v=1/6.4, col="blue")
+```
+
+## Trend of Statistics Discipline
+
+```{r}
+data2 = read.csv("stat_disc.csv")
+names(data2) = c("time", "value")
+data2 = ts(data2$value, start = c(2004, 1), frequency = 12)
+
+plot.ts(data2,
+        xlab = "Time",
+        ylab = "Relative Interest",
+        main = "Search Trend of Statistics (Topic)")
 ```

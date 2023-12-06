@@ -1,5 +1,0 @@
-"0","d1=diff(data)"
-"0","d2=diff(d1)"
-"0","d3=diff(d2)"
-"0","d4=diff(d3)"
-"0","plot.ts(d1, xlab="""", ylab="""")"

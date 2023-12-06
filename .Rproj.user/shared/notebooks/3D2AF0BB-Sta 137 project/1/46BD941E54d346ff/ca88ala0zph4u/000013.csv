@@ -1,3 +1,0 @@
-"0","t = 1:length(data)"
-"0","lsfit = lm(data~t)"
-"0","plot(t, data, xlab="""", ylab="""", main="""")"

@@ -1,5 +1,0 @@
-"0","ma2_3 = stats::filter(data, sides=2, rep(1,5)/5)"
-"0","ma2_4 = stats::filter(data, sides=2, rep(1,9)/9)"
-"0","ma2_6 = stats::filter(data, sides=2, rep(1,13)/13)"
-"0",""
-"0","plot(t, ma2_3, xlab="""", ylab="""", type=""l"")"
