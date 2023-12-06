@@ -147,9 +147,9 @@ qq3 = qqnorm(res3)
 ### Ljung-Box Test
 
 ```{r}
-Box.test(res1, lag = 1, type = "Ljung")
-Box.test(res2, lag = 1, type = "Ljung")
-Box.test(res3, lag = 1, type = "Ljung")
+Box.test(res1, lag = 1, type = "Ljung")$p.value
+Box.test(res2, lag = 1, type = "Ljung")$p.value
+Box.test(res3, lag = 1, type = "Ljung")$p.value
 ```
 
 ### ADF Test
